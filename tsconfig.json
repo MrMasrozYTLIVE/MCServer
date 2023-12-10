@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "esnext",
+      "es6"
+    ],
+    "target": "esnext",
+    "module": "commonjs",
+    "outDir": "./build",
+    "rootDir": "./src",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
