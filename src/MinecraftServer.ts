@@ -20,6 +20,8 @@ export class MinecraftServer {
 
             PlayerManager.handleConnection(socket);
         });
+
+        this.server.on('close', this.stop);
     }
 
     public stop() {
