@@ -7,8 +7,10 @@ import {PacketChat} from "../player/PacketChat";
 import {PlayerManager} from "../../../utils/PlayerManager";
 import {PacketPreChunk} from "../world/PacketPreChunk";
 import {PacketMapChunk} from "../world/PacketMapChunk";
+import {PacketPosition} from "../player/PacketPosition";
+import {PacketPositionLook} from "../player/PacketPositionLook";
 
-export class PacketHandshake extends Packet {
+export class PacketLogin extends Packet {
     constructor() {
         super({
             packetID: PacketEnum.Login
@@ -17,18 +19,18 @@ export class PacketHandshake extends Packet {
 
     readData(reader: IReader, player: Player) {
         const protocol = reader.readInt();
-        if(protocol > 14) PlayerManager.kickPlayer(player, `Server is outdated!`);
-        else if (protocol < 14) PlayerManager.kickPlayer(player, `Client is outdated!`);
+        if(protocol > 14) player.playerManager.kickPlayer(`Server is outdated!`);
+        else if (protocol < 14) player.playerManager.kickPlayer(`Client is outdated!`);
 
         const username = reader.readString16();
         const seed = reader.readLong();
         const dimension = reader.readByte();
-        PlayerManager.sendPacket(player, this);
-        PlayerManager.sendPacket(player, PacketManager.getPacket(PacketEnum.PositionLook));
+        player.playerManager.sendPacket(this);
+        player.playerManager.sendPacket(new PacketPositionLook());
         PlayerManager.sendPacketToAll(new PacketChat(`§e<${username}> has joined the game.`));
 
-        PlayerManager.sendPacket(player, new PacketPreChunk());
-        PlayerManager.sendPacket(player, new PacketMapChunk());
+        player.playerManager.sendPacket(new PacketPreChunk());
+        player.playerManager.sendPacket(new PacketMapChunk());
     }
 
     writeData() {

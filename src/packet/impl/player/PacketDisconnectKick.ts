@@ -12,7 +12,7 @@ export class PacketDisconnectKick extends Packet {
     }
 
     readData(reader: IReader, player: Player) {
-        PlayerManager.playerDisconnected(player.options.client);
+        player.playerManager.playerDisconnected();
     }
 
     writeData() {

@@ -18,5 +18,4 @@ export interface IPacketOption {
     player?: Player,
     packetID: PacketEnum,
     name?: string,
-    kickReason?: string
 }

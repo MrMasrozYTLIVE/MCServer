@@ -12,7 +12,7 @@ export class PacketServerList extends Packet {
     }
 
     readData(reader: IReader, player: Player) {
-        PlayerManager.kickPlayer(player, `Beta 1.7.3 Server§0§0`);
+        player.playerManager.kickPlayer(`Beta 1.7.3 Server§0§0`);
     }
 
     writeData() {

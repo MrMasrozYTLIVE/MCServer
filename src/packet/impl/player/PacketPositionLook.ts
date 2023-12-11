@@ -3,7 +3,7 @@ import {PacketEnum} from "../../../utils/PacketEnum";
 import {createWriter, Endian, IReader} from "bufferstuff";
 import {Player} from "../../../Player";
 
-export class PacketKick extends Packet {
+export class PacketPositionLook extends Packet {
     constructor() {
         super({
             packetID: PacketEnum.PositionLook

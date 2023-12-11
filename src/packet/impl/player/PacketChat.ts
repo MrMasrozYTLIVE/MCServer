@@ -13,7 +13,7 @@ export class PacketChat extends Packet {
     }
 
     readData(reader: IReader, player: Player) {
-        this.message = `<${player.options.username}> ${reader.readString16()}`
+        this.message = `<${player.username}> ${reader.readString16()}`
 
         PlayerManager.sendPacketToAll(this);
     }

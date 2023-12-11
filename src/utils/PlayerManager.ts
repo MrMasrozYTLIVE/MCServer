@@ -6,80 +6,74 @@ import {Socket} from "node:net";
 import {createReader, Endian} from "bufferstuff";
 import {PacketManager} from "./PacketManager";
 import {MinecraftServer} from "../MinecraftServer";
+import {PacketEnum} from "./PacketEnum";
+import {PacketHandshake} from "../packet/impl/login/PacketHandshake";
 
 export class PlayerManager {
-    static PlayerMap = new Map<Socket, Player>();
-    static SocketMap = new Map<String, Socket>();
+    public player: Player;
 
-    public static handleConnection(socket: Socket) {
-        if(!PlayerManager.PlayerMap.has(socket)) PlayerManager.PlayerMap.set(socket, new Player({
-            client: socket,
-            username: "Unknown"
-        }));
+    constructor(public username: string, public socket: Socket) {
+        this.player = new Player(username, socket, this);
+    }
 
-        socket.on('data', data => {
+    public handleConnection() {
+        this.socket.on('data', data => {
             const reader = createReader(Endian.BE, data);
 
             const packetID = reader.readUByte();
-            let packet: Packet;
-            packet = PacketManager.getPacket(packetID);
-
-            if(packet === undefined) {
-                if(MinecraftServer.debug) console.log(`Received Unknown packet: ${packetID}. Kicking the player.`);
-                PlayerManager.kickPlayer(PlayerManager.PlayerMap.get(socket), `Sent unknown packet ${packetID}`);
+            if(packetID == PacketEnum.Handshake) {
+                new PacketHandshake(this).readData(reader, null);
                 return;
             }
 
-            if(MinecraftServer.debug) console.log(`Received Packet: ${packet.options.name} (${packetID})`);
+            let packet: Packet = PacketManager.getPacket(packetID);
 
-            packet.readData(reader, PlayerManager.PlayerMap.get(socket));
+            if(packet === undefined) {
+                if(MinecraftServer.debug) console.log(`Received Unknown packet: ${packetID}. Kicking the player.`);
+                this.kickPlayer(`Sent unknown packet ${packetID}`);
+                return;
+            }
+
+            if(MinecraftServer.debug && packetID != PacketEnum.Position && packetID != PacketEnum.PositionLook)
+                console.log(`Received Packet: ${packet.options.name} (${packetID})`);
+
+            packet.readData(reader, this.player);
         });
 
-        socket.on('close', PlayerManager.playerDisconnected);
-        socket.on('timeout', PlayerManager.playerDisconnected);
+        this.socket.on('close', () => this.playerDisconnected());
+        this.socket.on('timeout', () => this.playerDisconnected());
     }
 
-    public static sendPacket(player: Player, packet: Packet) {
-        if(!packet || !player) {
-            console.log(`Tried to sent packet to player where either player or packet is null!`)
+    public sendPacket(packet: Packet) {
+        if(!packet) {
+            console.log(`Tried to sent null packet!`)
             return;
         }
 
-        if(MinecraftServer.debug) console.log(`Sending Packet: ${packet.options.name} (${packet.options.packetID}) to ${player.options.username}`);
-        packet.options.player = player;
+        if(MinecraftServer.debug) console.log(`Sending Packet: ${packet.options.name} (${packet.options.packetID}) to ${this.username}`);
+        packet.options.player = this.player;
 
-        player.options.client.write(packet.writeData());
+        this.player.socket.write(packet.writeData());
     }
 
     public static sendPacketToAll(packet: Packet) {
-        PlayerManager.PlayerMap.forEach(player => {
-            PlayerManager.sendPacket(player, packet);
+        MinecraftServer.PlayerManagers.forEach(manager => {
+            manager.sendPacket(packet);
         })
     }
 
-    public static kickPlayer(player: Player, reason: string) {
-        if(!player) {
-            console.log(`Tried to kick null player!`);
-            return;
-        }
-
-        PlayerManager.sendPacket(player, new PacketDisconnectKick(reason));
-        this.playerDisconnected(player.options.client);
+    public kickPlayer(reason: string) {
+        this.sendPacket(new PacketDisconnectKick(reason));
     }
 
-    public static playerDisconnected(socket: Socket) {
-        const player = PlayerManager.PlayerMap.get(socket);
-        if(!player) return;
+    public playerDisconnected() {
+        if(MinecraftServer.debug) console.log(`Player ${this.username} left. Deleting from the map!`);
+        MinecraftServer.PlayerManagers.delete(this.username);
 
-        const username = player.options.username;
-        if(MinecraftServer.debug) console.log(`Player ${username} left. Deleting from the map!`);
-        PlayerManager.SocketMap.delete(username);
-        PlayerManager.PlayerMap.delete(socket);
-
-        PlayerManager.sendPacketToAll(new PacketChat(`§e<${username}> left the game.`));
+        PlayerManager.sendPacketToAll(new PacketChat(`§e<${this.username}> left the game.`));
     }
 
     public static getPlayer(username: String) {
-        return PlayerManager.PlayerMap.get(PlayerManager.SocketMap.get(username));
+        return MinecraftServer.PlayerManagers.get(username)?.player;
     }
 }

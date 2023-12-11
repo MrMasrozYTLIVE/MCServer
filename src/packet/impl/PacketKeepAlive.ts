@@ -12,7 +12,7 @@ export class PacketKeepAlive extends Packet {
     }
 
     readData(reader: IReader, player: Player) {
-        PlayerManager.sendPacket(player, this);
+        player.playerManager.sendPacket(this);
     }
 
     writeData() {
