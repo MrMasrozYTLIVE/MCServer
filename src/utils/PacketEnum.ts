@@ -9,6 +9,8 @@ export enum PacketEnum {
     Look = 0x0C,
     PositionLook = 0x0D,
     Animation = 0x12,
+    EntityPositionLook = 0x21,
+    EntityTeleport = 0x22,
     PreChunk = 0x32,
     MapChunk = 0x33,
     MultiBlockChange = 0x34,

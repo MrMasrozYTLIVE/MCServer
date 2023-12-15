@@ -24,6 +24,7 @@ export class MinecraftServer {
         });
 
         this.server.on('close', this.stop);
+        this.server.on('drop', () => {})
     }
 
     public stop() {

@@ -3,27 +3,32 @@ import {PacketEnum} from "../../../utils/PacketEnum";
 import {createWriter, Endian, IReader} from "bufferstuff";
 import {Player} from "../../../Player";
 
-export class PacketPosition extends Packet {
+export class PacketLook extends Packet {
     constructor() {
         super({
-            packetID: PacketEnum.Position
+            packetID: PacketEnum.Look
         })
     }
 
     readData(reader: IReader, player: Player) {
         player.updatePosition(
-            reader.readDouble(), // X
-            reader.readDouble(), // Y
-            reader.readDouble(), // Stance
-            reader.readDouble(), // Z
-            undefined, // Yaw
-            undefined, // Pitch
+            undefined, // X
+            undefined, // Y
+            undefined, // Stance
+            undefined, // Z
+            reader.readFloat(), // Yaw
+            reader.readFloat(), // Pitch
             reader.readBool() // onGround
         );
     }
 
     writeData() {
+        const player: Player = this.options.player;
+
         return createWriter(Endian.BE).writeUByte(this.options.packetID)
+            .writeLong(player.yaw)
+            .writeLong(player.pitch)
+            .writeBool(player.onGround)
             .toBuffer();
     }
 }

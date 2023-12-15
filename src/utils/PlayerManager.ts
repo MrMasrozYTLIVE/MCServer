@@ -30,7 +30,7 @@ export class PlayerManager {
 
             if(packet === undefined) {
                 if(MinecraftServer.debug) console.log(`Received Unknown packet: ${packetID}. Kicking the player.`);
-                this.kickPlayer(`Sent unknown packet ${packetID}`);
+                // this.kickPlayer(`Sent unknown packet ${packetID}`);
                 return;
             }
 
@@ -42,6 +42,7 @@ export class PlayerManager {
 
         this.socket.on('close', () => this.playerDisconnected());
         this.socket.on('timeout', () => this.playerDisconnected());
+        this.socket.on('error', () => this.playerDisconnected());
     }
 
     public sendPacket(packet: Packet) {

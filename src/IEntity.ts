@@ -1,3 +1,3 @@
 export interface IEntity {
-    entityID: Number
+    entityID: number
 }
