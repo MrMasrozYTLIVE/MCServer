@@ -8,6 +8,7 @@ import {PacketManager} from "./PacketManager";
 import {MinecraftServer} from "../MinecraftServer";
 import {PacketEnum} from "./PacketEnum";
 import {PacketHandshake} from "../packet/impl/login/PacketHandshake";
+import {ChatColor} from "./ChatColor";
 
 export class PlayerManager {
     public player: Player;
@@ -71,7 +72,7 @@ export class PlayerManager {
         if(MinecraftServer.debug) console.log(`Player ${this.username} left. Deleting from the map!`);
         MinecraftServer.PlayerManagers.delete(this.username);
 
-        PlayerManager.sendPacketToAll(new PacketChat(`§e<${this.username}> left the game.`));
+        PlayerManager.sendPacketToAll(new PacketChat(`${ChatColor.YELLOW}<${this.username}> left the game.`));
     }
 
     public static getPlayer(username: String) {

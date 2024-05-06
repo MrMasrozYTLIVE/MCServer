@@ -9,6 +9,8 @@ import {PacketPreChunk} from "../world/PacketPreChunk";
 import {PacketMapChunk} from "../world/PacketMapChunk";
 import {PacketPosition} from "../player/PacketPosition";
 import {PacketPositionLook} from "../player/PacketPositionLook";
+import {MinecraftServer} from "../../../MinecraftServer";
+import {ChatColor} from "../../../utils/ChatColor";
 
 export class PacketLogin extends Packet {
     constructor() {
@@ -19,15 +21,17 @@ export class PacketLogin extends Packet {
 
     readData(reader: IReader, player: Player) {
         const protocol = reader.readInt();
-        if(protocol > 14) player.playerManager.kickPlayer(`Server is outdated!`);
-        else if (protocol < 14) player.playerManager.kickPlayer(`Client is outdated!`);
+        if(protocol > 14) return player.playerManager.kickPlayer(`Server is outdated!`);
+        else if (protocol < 14) return player.playerManager.kickPlayer(`Client is outdated!`);
+
+        if(MinecraftServer.PlayerManagers.size > MinecraftServer.MAX_PLAYERS) return player.playerManager.kickPlayer(`Server is full!`);
 
         const username = reader.readString16();
         const seed = reader.readLong();
         const dimension = reader.readByte();
         player.playerManager.sendPacket(this);
         player.playerManager.sendPacket(new PacketPositionLook());
-        PlayerManager.sendPacketToAll(new PacketChat(`§e<${username}> has joined the game.`));
+        PlayerManager.sendPacketToAll(new PacketChat(`${ChatColor.YELLOW}<${username}> has joined the game.`));
 
         player.playerManager.sendPacket(new PacketPreChunk());
         player.playerManager.sendPacket(new PacketMapChunk());

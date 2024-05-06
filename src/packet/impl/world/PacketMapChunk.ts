@@ -6,30 +6,32 @@ import {deflate} from "node:zlib";
 import * as zlib from "zlib";
 
 export class PacketMapChunk extends Packet {
+    public world: Buffer;
+
     constructor() {
         super({
             packetID: PacketEnum.MapChunk
         })
+
+        const chunk = createWriter(Endian.BE);
+
+        for(let x = 0; x < 256; x++) {
+            for(let i = 0; i < 90; i++) {
+                chunk.writeByte(1);
+            }
+
+            for(let i = 0; i < 38; i++) {
+                chunk.writeByte(0);
+            }
+        }
+
+        this.world = zlib.deflateSync(chunk.toBuffer());
     }
 
     readData(reader: IReader, player: Player) {
     }
 
     writeData() {
-        const world = createWriter(Endian.BE);
-
-        for(let x = 0; x < 256; x++) {
-            for(let i = 0; i < 10; i++) {
-                world.writeByte(1);
-            }
-
-            for(let i = 0; i < 118; i++) {
-                world.writeByte(0);
-            }
-        }
-
-        const buf = zlib.deflateSync(world.toBuffer());
-
         return createWriter(Endian.BE).writeUByte(this.options.packetID)
             .writeInt(0)
             .writeShort(0)
@@ -37,8 +39,8 @@ export class PacketMapChunk extends Packet {
             .writeByte(15)
             .writeByte(127)
             .writeByte(15)
-            .writeInt(buf.length)
-            .writeBuffer(buf)
+            .writeInt(this.world.length)
+            .writeBuffer(this.world)
             .toBuffer();
     }
 }

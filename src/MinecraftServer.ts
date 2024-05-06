@@ -2,7 +2,6 @@ import { PacketManager } from "./utils/PacketManager";
 import {PlayerManager} from "./utils/PlayerManager";
 import {Server} from "node:net"; // TODO: Replace with https://bun.sh/docs/api/tcp
 import {PacketDisconnectKick} from "./packet/impl/player/PacketDisconnectKick";
-import {Player} from "./Player";
 
 export class MinecraftServer {
     public server: Server = new Server();
@@ -10,6 +9,7 @@ export class MinecraftServer {
 
     public static PlayerManagers = new Map<String, PlayerManager>();
     // EntityMap = new Map<Number, IEntity>();
+    public static MAX_PLAYERS = 20;
 
     public async start() {
         this.server.listen(25565, async () => {

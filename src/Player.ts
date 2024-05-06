@@ -12,7 +12,7 @@ export class Player extends Entity {
 
     public xPosition: number = 0;
     public prevXPosition: number = this.xPosition;
-    public yPosition: number = 100;
+    public yPosition: number = 140;
     public prevYPosition: number = this.yPosition;
     public zPosition: number = 0;
     public prevZPosition: number = this.zPosition;
